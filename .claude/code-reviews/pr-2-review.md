@@ -1,50 +1,45 @@
-# PR #2 Review — feat: project scaffold, Supabase schema, and shared infra (PB-0001)
+# PR #2 Review — `feat(admin): add post CRUD (create, edit, delete, publish)`
 
-**Branch**: `feature/pb-0001-project-scaffold-and-supabase-schema` → `master`
-**Reviewed**: fresh-eyes pass (code-reviewer agent) + validation, against `CLAUDE.md`, `.claude/references/`, and the PR's own implementation report/plan.
+**Branch**: `feature/pb-0003-admin-post-crud` → `main`   **Reviewed against**: `.claude/plans/pb-0003-admin-post-crud.md` + `.claude/reports/pb-0003-admin-post-crud-report.md`
 
 ## Summary
 
-Greenfield scaffold: Next.js 16 (App Router, TS, Tailwind v4) app, the `posts` schema + RLS + storage bucket migration, the privileged/browser Supabase client split, `next-themes`, and a routing-only `proxy.ts` stub. No admin/public UI yet — this ticket proves the plumbing. Matches its own plan closely; documented deviations (`middleware.ts`→`proxy.ts` rename, SQL-editor-applied migration, missing-GRANTs fix, Tailwind `dark:` custom variant, `agentRules: false`, lint-driven hook rewrite) are intentional decisions, not review findings.
+This ticket gives the admin area its first real content-management capability: an all-statuses post list, a shared create/edit form, delete with confirmation, and a DB trigger that stamps `published_at` on first publish. Implementation follows the plan closely — task list, file list, and Server Action shapes all match. Both deviations called out in the PR description (`deletePost`'s explicit `revalidatePath("/admin/posts")`, and `.overrideTypes()` instead of the deprecated `.returns()`) are documented in the report and are reasonable, tested engineering calls, not undocumented drift.
 
 ## Validation
 
 | Check | Result |
 |---|---|
-| `npm run build` | ✅ Pass, zero errors — all routes static, proxy registered for `/admin/:path*` |
+| `npx tsc --noEmit` | ✅ Pass, zero errors |
 | `npm run lint` | ✅ Pass, zero errors/warnings |
-| `.env.local` tracked by git | ✅ Not tracked (`.env*.local` gitignored); `.env.local.example` correctly tracked |
-
-## Issues
-
-### High
-
-1. **Migration is not idempotent — will break the CLI workflow the PR's own README prescribes as the next step.** [`supabase/migrations/20260819181837_init_schema.sql:36-71`](../../supabase/migrations/20260819181837_init_schema.sql#L36-L71)
-   The 5 `create policy ...` statements have no `drop policy if exists` guard (Postgres has no `create policy if not exists`). This migration was applied out-of-band via the SQL editor (documented deviation — CLI rejects the current token format), so the CLI's migration-history table almost certainly doesn't have it marked as applied. README.MD:38-39 explicitly says the next step, once the token bug is fixed, is `supabase link` + `supabase db push` — which will replay this file and fail with `policy "..." already exists`, blocking migrations on a future ticket.
-   **Fix**: add `drop policy if exists "<name>" on <table>;` before each `create policy` (matches the existing `drop trigger if exists` pattern already used in the same file for the trigger).
-
-### Medium
-
-2. **Stale `middleware.ts` reference in `.env.local.example`.** [`.env.local.example:10`](../../.env.local.example#L10) — `# Allowlisted admin email - the only account middleware.ts will let into /admin/*`. The report documents updating `CLAUDE.md` and `supabase-access-control.md` for the `proxy.ts` rename but missed this file. Should read `proxy.ts`.
-3. **No `server-only` guard on the privileged client.** [`src/lib/supabase/server.ts`](../../src/lib/supabase/server.ts) has no `import "server-only"`. Not a live leak risk today (the secret key has no `NEXT_PUBLIC_` prefix, so Next.js won't inline it), but there's no compile-time tripwire — an accidental client-component import would surface as a confusing runtime key error rather than a build failure. Cheap to add once `server.ts` starts getting called from real mutation code in PB-0002/PB-0003.
-4. **`proxy.ts` no-op has no forward marker.** [`src/proxy.ts`](../../src/proxy.ts) is a literal pass-through matched to `/admin/:path*`, harmless only because no `app/admin` route exists yet. Nothing flags that PB-0002 must land real auth logic before any admin route ships. A one-line `// TODO(PB-0002): real session + email-allowlist check` would prevent this reading as "protection is in place" later.
-
-### Low
-
-5. Non-null assertions (`!`) on env vars in `client.ts`/`server.ts` — acceptable for this stage; will just produce an opaque SDK error instead of a clear message if `.env.local` is misconfigured. Not worth fixing now.
-6. [`eslint.config.mjs:9-15`](../../eslint.config.mjs#L9-L15) — the `globalIgnores([...])` comment claims to "Override default ignores of eslint-config-next," but the list is identical to the defaults, so it's currently a no-op. Harmless, just misleading.
-7. [`src/app/page.tsx:11`](../../src/app/page.tsx#L11) throws the raw Postgrest error with no logging/context. Fine for a throwaway smoke-test page — flagging so it isn't copy-pasted as-is once real public data-fetching code is built.
+| `npm run build` | ✅ Pass — `/admin/posts`, `/admin/posts/new`, `/admin/posts/[id]/edit` all render dynamic (ƒ), consistent with the rest of `/admin/*` |
+| Manual logged-in flow (create → edit → publish → duplicate-slug error → delete) | ✅ Confirmed working per report |
 
 ## What's done well
 
-- Key boundary correctly implemented: secret key has no `NEXT_PUBLIC_` prefix and is only read in `server.ts`; `client.ts` uses only the publishable key.
-- `proxy.ts`'s export shape (`export function proxy()` + `export const config`) is verified correct against Next.js 16's actual build-time validator — it will genuinely run (as a no-op), not silently skip.
-- Migration's RLS policies match `supabase-access-control.md` and `data-model.md` exactly; the base-table `GRANT`s (a real bug caught during the PR's own live verification) are present and correctly scoped.
-- `posts` schema matches the data-model reference field-for-field, including the "array column, not join table" and "no media table" decisions.
-- `theme-toggle.tsx`'s `useSyncExternalStore` hydration guard is a clean, lint-passing alternative to the plan's literal `useEffect`+`setState` guard.
-- No secrets committed; `.gitignore` correctly scopes `.env*.local` while keeping `.env.local.example` tracked.
-- Implementation report is thorough and every deviation from the plan is documented with rationale — exactly the trail this review needed to distinguish real issues from intentional decisions.
+- **Trigger logic is correct on close inspection**: traced both INSERT and UPDATE paths — `published_at` is set once on first publish, untouched on unpublish, and a no-op on republish (`published_at is null` is already false). App code never sets this column, matching the documented single-source-of-truth decision.
+- **Revalidation branching handles the hard case**: the compound "unpublish + rename in the same edit" correctly revalidates both the old (`currentSlug`) and new (`fields.slug`) public paths — an easy case to get wrong that isn't.
+- **`23505` (unique_violation) handling is correctly scoped**: `slug` is the only unique constraint on `posts`, so the duplicate-slug error message can't misfire against something else.
+- **Hidden-field trust (`DeleteButton`'s `slug`/`status`, `updatePost`'s `currentStatus`) is bounded correctly**: those fields only steer cache revalidation, never the actual `WHERE` clause (`id`-scoped), and the action is still gated by `proxy.ts` + RLS regardless. Worst case is a stale public page, not a security or data issue — matches the plan's stated trade-off.
+- **Server Action shapes match existing conventions exactly**: `createPost`/`updatePost` mirror `login/actions.ts`'s stateful shape; `deletePost` mirrors `logout.ts`'s plain-action shape.
+- **"Never trust the client's derived value"** is followed consistently — the client-side slug auto-generation in `PostForm.tsx` is UX-only; `readPostFields` re-normalizes server-side regardless of what arrives.
+
+## Issues
+
+### Medium
+
+- **`src/app/admin/(protected)/posts/[id]/edit/page.tsx:13-25`** — A malformed `id` segment (e.g. visiting `/admin/posts/not-a-uuid/edit`) makes Postgres raise an invalid-UUID-syntax error, which hits `if (error) throw error` before the `notFound()` branch is reached. There's no `error.tsx` anywhere in the app yet, so this surfaces as Next's default unstyled error page instead of the clean 404 this code otherwise provides for a valid-but-missing id.
+  - **Fix**: validate `id` looks like a UUID before querying, or catch the specific Postgres invalid-input error code and route it to `notFound()` too.
+
+### Low
+
+- **`actions.ts:104-111` (`updatePost`)** — no check on affected row count after `.update(fields).eq("id", id)`. A stale hidden `id` or a race with a concurrent delete returns `error: null` with zero rows affected, and the action still redirects as if it succeeded. Low risk at single-admin scale; worth a one-line comment if intentional.
+- **`DeleteButton.tsx:9-12`** — `status` prop typed as plain `string` instead of the project's canonical `PostStatus` (from `@/lib/posts/types`). Free type-safety win.
+- **Filename casing** — `PostForm.tsx`/`DeleteButton.tsx` are PascalCase; every existing client component in the repo (`login-form.tsx`, `theme-toggle.tsx`, `theme-provider.tsx`) is kebab-case. Not functional, but sets a new precedent worth an explicit decision.
+- **`actions.ts:58` (`readPostFields`)** — `content` has no non-empty validation (unlike `title`), so a post can be published with empty content. Possibly fine for MVP; flagging in case that wasn't intended.
+- **`page.tsx:8-12` vs `[id]/edit/page.tsx:13-17`** — two different Supabase row-typing approaches used side by side (`.overrideTypes<Post[], {merge:false}>()` vs `.maybeSingle<Post>()`). Both valid; picking one convention per feature would read more consistently. Cosmetic.
+- **`page.tsx:10`** — `.select("*")` pulls the full markdown `content` column for every row on a list view that only renders title/status/tags. Not a real cost at personal-blog scale; worth narrowing if the table grows.
 
 ## Recommendation
 
-**Request changes** — one High-severity issue (migration idempotency) that will cause a concrete future failure the repo's own documented next step will trigger. No critical/security blockers; the key split and RLS/grants are sound. Low bar to clear: guard the 5 `create policy` statements with `drop policy if exists` (matching the pattern already used for the trigger in the same file), and optionally sweep the two Medium items (stale `middleware.ts` mention, proxy TODO marker) in the same pass.
+**Approve.** No Critical or High-severity findings — the auth/RLS boundary, the publish-date trigger, slug-collision handling, and the revalidation branching (including the tricky combined unpublish+rename case) all check out on close inspection. The one Medium item (malformed-`id` UX gap on the edit route) is worth a decision before or shortly after merge but doesn't block it, and is consistent with the rest of the codebase's current error-handling maturity (no `error.tsx` exists anywhere yet). The Low items are optional polish.
