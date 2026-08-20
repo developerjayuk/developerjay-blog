@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminEmail } from "@/lib/auth/admin-email";
 
 export default async function ProtectedAdminLayout({
   children,
@@ -11,7 +12,7 @@ export default async function ProtectedAdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user?.email !== process.env.ADMIN_EMAIL) {
+  if (user?.email !== getAdminEmail()) {
     redirect("/admin/login");
   }
 

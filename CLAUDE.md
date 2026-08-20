@@ -21,9 +21,11 @@ app/
 lib/
   supabase/              # admin.ts: privileged client (secret key, server-only, bypasses RLS,
                         #   sync createClient()). server.ts: cookie-aware session client
-                        #   (publishable key, respects RLS, async createClient()) used by proxy.ts,
-                        #   the (protected) layout, and login/logout Server Actions. client.ts:
-                        #   browser client (publishable key). Secret key must never reach the client.
+                        #   (publishable key, respects RLS, async createClient()) used by the
+                        #   (protected) layout and login/logout Server Actions — proxy.ts builds an
+                        #   equivalent inline client (different cookie adapter, not this module).
+                        #   client.ts: browser client (publishable key). Secret key must never reach
+                        #   the client.
 ```
 Supabase project (external, not in this repo): `posts` table, RLS policies, one Storage bucket for
 images, Auth config with public sign-up disabled and one allowlisted admin user.

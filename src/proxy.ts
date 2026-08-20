@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getAdminEmail } from "@/lib/auth/admin-email";
 
 const LOGIN_PATH = "/admin/login";
 
@@ -30,13 +31,13 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthorized = user?.email === process.env.ADMIN_EMAIL;
+  const isAuthorized = user?.email === getAdminEmail();
   const isLoginPath = request.nextUrl.pathname.startsWith(LOGIN_PATH);
 
   if (!isAuthorized && !isLoginPath) {
     const url = request.nextUrl.clone();
     url.pathname = LOGIN_PATH;
-    url.searchParams.set("redirect", request.nextUrl.pathname);
+    url.searchParams.set("redirect", request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 
