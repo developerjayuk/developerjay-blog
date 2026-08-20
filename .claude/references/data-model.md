@@ -8,7 +8,8 @@ revisit only if tag metadata (descriptions, counts, slugs) is ever needed.
 
 There's no separate media table. Images upload directly to a Supabase Storage bucket, and the
 resulting URL is inserted straight into the post's markdown `content` — no indirection between an
-image and where it's referenced.
+image and where it's referenced. This flow is live as of PB-0004: `admin/(protected)/posts/upload/`
+uploads to the `post-images` bucket and `PostForm.tsx` inserts the returned URL into `content`.
 
 Users live entirely in Supabase Auth's built-in table — one allowlisted admin account, no custom
 `users` table.
