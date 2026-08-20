@@ -11,7 +11,15 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/gif": "gif",
 };
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
+  // Route Handlers (unlike Server Actions) don't get Next.js's automatic Origin-header
+  // CSRF check — cheapest guard, so it runs before the auth lookup.
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  if (origin && host && new URL(origin).host !== host) {
+    return Response.json({ error: "Unauthorized." }, { status: 403 });
+  }
+
   const supabase = await createServerClient();
   const {
     data: { user },
@@ -41,18 +49,19 @@ export async function POST(request: Request) {
   }
 
   const path = `${crypto.randomUUID()}.${extension}`;
-  const admin = createAdminClient();
-  const { error: uploadError } = await admin.storage.from(BUCKET).upload(path, file, {
+  const bucket = createAdminClient().storage.from(BUCKET);
+  const { error: uploadError } = await bucket.upload(path, file, {
     contentType: file.type,
   });
 
   if (uploadError) {
+    console.error("Image upload to Storage failed:", uploadError);
     return Response.json({ error: "Upload failed. Please try again." }, { status: 500 });
   }
 
   const {
     data: { publicUrl },
-  } = admin.storage.from(BUCKET).getPublicUrl(path);
+  } = bucket.getPublicUrl(path);
 
   return Response.json({ url: publicUrl });
 }

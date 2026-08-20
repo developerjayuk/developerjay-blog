@@ -6,6 +6,8 @@ const ACCEPTED_TYPES = "image/png,image/jpeg,image/webp,image/gif";
 // max size 4MB, same as the server limit
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
+type UploadResponse = { url: string } | { error: string };
+
 export function ImageUpload({ onUploaded }: { onUploaded: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,10 +30,10 @@ export function ImageUpload({ onUploaded }: { onUploaded: (url: string) => void 
 
     try {
       const res = await fetch("/admin/posts/upload", { method: "POST", body });
-      const result = await res.json();
+      const result = (await res.json()) as UploadResponse;
 
-      if (!res.ok) {
-        setError(result.error ?? "Upload failed. Please try again.");
+      if (!res.ok || "error" in result) {
+        setError("error" in result ? result.error : "Upload failed. Please try again.");
         return;
       }
 
