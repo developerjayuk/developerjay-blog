@@ -13,8 +13,12 @@ app/
                         #   revalidated on publish (posts change at most weekly)
   admin/                # session-gated CRUD UI (login, post list/create/edit/delete,
                         #   image upload, draft/publish toggle) — gated by proxy;
-                        #   admin/(protected)/ holds the dashboard + future CRUD pages,
+                        #   admin/(protected)/ holds the dashboard + CRUD pages,
                         #   admin/login/ stays outside that group so it's reachable logged-out
+    (protected)/
+      posts/            # post list (all statuses) + shared create/edit PostForm +
+                        #   DeleteButton, backed by actions.ts (createPost/updatePost/
+                        #   deletePost) — all writes via lib/supabase/server, not admin.ts
   proxy.ts              # checks active Supabase session AND session email == allowlisted admin,
                         #   redirects unauthenticated/wrong-email requests to /admin/login
                         #   (Next.js 16 renamed the middleware.ts convention to proxy.ts)
@@ -26,6 +30,8 @@ lib/
                         #   equivalent inline client (different cookie adapter, not this module).
                         #   client.ts: browser client (publishable key). Secret key must never reach
                         #   the client.
+  posts/                # types.ts (hand-declared Post/PostStatus, no generated Database types
+                        #   yet) + slugify.ts (shared client/server slug normalization)
 ```
 Supabase project (external, not in this repo): `posts` table, RLS policies, one Storage bucket for
 images, Auth config with public sign-up disabled and one allowlisted admin user.
