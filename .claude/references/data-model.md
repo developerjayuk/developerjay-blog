@@ -12,3 +12,7 @@ image and where it's referenced.
 
 Users live entirely in Supabase Auth's built-in table — one allowlisted admin account, no custom
 `users` table.
+
+`published_at` is set by the `set_published_at` DB trigger (mirroring `set_updated_at`) the first
+time a post's `status` becomes `'published'`, and is never modified afterward — an unpublish/
+republish cycle preserves the original publish date. App code does not set this column directly.
