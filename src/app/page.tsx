@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/admin";
 import { ThemeToggle } from "@/lib/theme/theme-toggle";
 
 export default async function Home() {

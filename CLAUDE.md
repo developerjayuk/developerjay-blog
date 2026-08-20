@@ -12,23 +12,29 @@ app/
   (public)/            # post list + post detail pages — statically generated with ISR,
                         #   revalidated on publish (posts change at most weekly)
   admin/                # session-gated CRUD UI (login, post list/create/edit/delete,
-                        #   image upload, draft/publish toggle) — gated by proxy
-  proxy.ts              # checks active Supabase session AND session email == allowlisted admin
+                        #   image upload, draft/publish toggle) — gated by proxy;
+                        #   admin/(protected)/ holds the dashboard + future CRUD pages,
+                        #   admin/login/ stays outside that group so it's reachable logged-out
+  proxy.ts              # checks active Supabase session AND session email == allowlisted admin,
+                        #   redirects unauthenticated/wrong-email requests to /admin/login
                         #   (Next.js 16 renamed the middleware.ts convention to proxy.ts)
 lib/
-  supabase/              # privileged server client (secret key, server-only, bypasses RLS) and
-                        #   browser client (publishable key) — kept separate, secret key must never
-                        #   reach the client
+  supabase/              # admin.ts: privileged client (secret key, server-only, bypasses RLS,
+                        #   sync createClient()). server.ts: cookie-aware session client
+                        #   (publishable key, respects RLS, async createClient()) used by proxy.ts,
+                        #   the (protected) layout, and login/logout Server Actions. client.ts:
+                        #   browser client (publishable key). Secret key must never reach the client.
 ```
 Supabase project (external, not in this repo): `posts` table, RLS policies, one Storage bucket for
 images, Auth config with public sign-up disabled and one allowlisted admin user.
 
 ## Where new code goes
 - **New public page:** `app/(public)/` — follows the existing ISR pattern (see Rendering below).
-- **New admin capability:** `app/admin/` — a Server Action or Route Handler using the server Supabase
-  client (`lib/supabase/server`, secret key).
-- **Any Supabase read/write:** goes through `lib/supabase/server` or `lib/supabase/client`, not an
-  ad-hoc `createClient()` call.
+- **New admin capability:** `app/admin/(protected)/` for pages requiring a logged-in session — a
+  Server Action or Route Handler using `lib/supabase/admin` (secret key, privileged) or
+  `lib/supabase/server` (publishable key, session-scoped), whichever the operation needs.
+- **Any Supabase read/write:** goes through `lib/supabase/admin`, `lib/supabase/server`, or
+  `lib/supabase/client`, not an ad-hoc `createClient()` call.
 
 ## Ground rules (conventions)
 - **Backend:** No hand-rolled API layer, no separate backend service — Server Actions/Route Handlers
