@@ -18,7 +18,14 @@ app/
     (protected)/
       posts/            # post list (all statuses) + shared create/edit PostForm +
                         #   DeleteButton, backed by actions.ts (createPost/updatePost/
-                        #   deletePost) — all writes via lib/supabase/server, not admin.ts
+                        #   deletePost) — all writes via lib/supabase/server, not admin.ts.
+                        #   posts/upload/route.ts is a POST Route Handler (the app's first —
+                        #   everything else is a Server Action) that uploads to the post-images
+                        #   bucket via lib/supabase/admin (the first use of the RLS-bypassing
+                        #   client outside a page/action already wrapped by the (protected)
+                        #   layout, so it re-checks auth itself); ImageUpload.tsx is the Client
+                        #   Component that calls it and hands the resulting URL back to
+                        #   PostForm.tsx to splice into the content textarea as markdown
   proxy.ts              # checks active Supabase session AND session email == allowlisted admin,
                         #   redirects unauthenticated/wrong-email requests to /admin/login
                         #   (Next.js 16 renamed the middleware.ts convention to proxy.ts)

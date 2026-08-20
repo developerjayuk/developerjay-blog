@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { createPost, updatePost, type PostFormState } from "./actions";
+import { ImageUpload } from "./ImageUpload";
 import { slugify } from "@/lib/posts/slugify";
 import type { Post } from "@/lib/posts/types";
 
@@ -12,6 +13,21 @@ export function PostForm({ mode, post }: PostFormProps) {
   const [state, formAction, pending] = useActionState<PostFormState, FormData>(action, null);
   const [slug, setSlug] = useState(post?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertImageAtCursor(url: string) {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+
+    const markdown = `![](${url})`;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    textarea.value = textarea.value.slice(0, start) + markdown + textarea.value.slice(end);
+
+    const cursor = start + markdown.length;
+    textarea.focus();
+    textarea.setSelectionRange(cursor, cursor);
+  }
 
   return (
     <form action={formAction} className="flex flex-col gap-4 max-w-2xl">
@@ -68,7 +84,9 @@ export function PostForm({ mode, post }: PostFormProps) {
       <label htmlFor="content" className="text-sm">
         Content (Markdown)
       </label>
+      <ImageUpload onUploaded={insertImageAtCursor} />
       <textarea
+        ref={contentRef}
         id="content"
         name="content"
         rows={16}
