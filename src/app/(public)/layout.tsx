@@ -6,7 +6,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <div className="flex flex-1 flex-col">
       <header className="flex items-center justify-between border-b px-6 py-4">
         <Link href="/" className="text-lg font-semibold">
-          Developer Jay&apos;s Musings
+          <span className="text-red-400">Developer Jay&apos;s Musings</span>
         </Link>
         <ThemeToggle />
       </header>
