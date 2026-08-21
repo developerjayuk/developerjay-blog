@@ -14,7 +14,12 @@ in `lib/supabase/`:
 - `lib/supabase/server.ts` — publishable key (`sb_publishable_...`), cookie-aware via `@supabase/ssr`,
   respects RLS. Async `createClient()` (must be awaited) — used by `proxy.ts`'s inline client build,
   the `(protected)` layout's session check, and the login/logout Server Actions to read/write the
-  session cookie.
+  session cookie. As of PB-0005, also used by the `(public)` pages' `lib/posts/queries.ts` — the
+  first time this client is exercised with **no session** (logged-out/anon role) rather than only
+  by the authenticated admin/login flows; same client, same RLS enforcement, just the anon role.
+  `createClient()` tolerates `cookies()` throwing (build-time contexts like `generateStaticParams`
+  have no request to read cookies from) by falling back to an empty cookie store, which is still
+  correct RLS behavior since that context is always logged-out anyway.
 - `lib/supabase/client.ts` — the browser-side counterpart (publishable key), the only key allowed
   client-side.
 

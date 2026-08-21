@@ -9,8 +9,13 @@ to Supabase (Postgres + Auth + Storage) — no hand-rolled backend service.
 ## Architecture map
 ```
 app/
-  (public)/            # post list + post detail pages — statically generated with ISR,
-                        #   revalidated on publish (posts change at most weekly)
+  (public)/            # post list (page.tsx) + post detail (posts/[slug]/page.tsx, with
+                        #   generateStaticParams/generateMetadata) — both `revalidate = false` +
+                        #   `dynamic = "force-static"`, revalidated on publish (posts change at
+                        #   most weekly); layout.tsx (site title + ThemeToggle); PostCard.tsx/
+                        #   TagList.tsx (shared list+detail pieces); MarkdownContent.tsx (client
+                        #   wrapper rendering the server-produced markdown HTML string, with a
+                        #   delegated click handler for code-block copy buttons)
   admin/                # session-gated CRUD UI (login, post list/create/edit/delete,
                         #   image upload, draft/publish toggle) — gated by proxy;
                         #   admin/(protected)/ holds the dashboard + CRUD pages,
@@ -38,7 +43,13 @@ lib/
                         #   client.ts: browser client (publishable key). Secret key must never reach
                         #   the client.
   posts/                # types.ts (hand-declared Post/PostStatus, no generated Database types
-                        #   yet) + slugify.ts (shared client/server slug normalization)
+                        #   yet) + slugify.ts (shared client/server slug normalization) +
+                        #   queries.ts (getPublishedPosts/getPublishedPostBySlug, React `cache()`-
+                        #   wrapped, RLS-only filtering — no app-level status filter)
+  markdown/              # render.ts: unified pipeline (remark-parse/gfm/rehype → rehype-pretty-
+                        #   code with dual light/dark Shiki themes → rehype-stringify) producing
+                        #   an HTML string server-side. rehype-copy-button.ts: hand-rolled rehype
+                        #   plugin wrapping each <pre> for the copy-button UI.
 ```
 Supabase project (external, not in this repo): `posts` table, RLS policies, one Storage bucket for
 images, Auth config with public sign-up disabled and one allowlisted admin user.
@@ -59,7 +70,10 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
 - **Data model:** `posts` schema + storage decisions — see `.claude/references/data-model.md`.
 - **Rendering:** Public post pages use ISR (revalidated on publish), not per-request SSR — posts
   change at most weekly.
-- **Post content:** Markdown, rendered with `react-markdown` + `shiki`/`rehype-pretty-code`.
+- **Post content:** Markdown, rendered server-side with a `unified` pipeline (`remark`/`rehype`) +
+  `shiki`/`rehype-pretty-code` for syntax highlighting — not the `react-markdown` component (its
+  plugin execution model doesn't fit `rehype-pretty-code`'s async Shiki highlighter; see
+  `lib/markdown/render.ts`).
 - **Search:** Postgres full-text search via Supabase — no separate search service.
 - **Dark mode:** `next-themes`, not a hand-rolled theme context.
 

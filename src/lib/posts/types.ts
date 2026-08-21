@@ -13,3 +13,5 @@ export type Post = {
   created_at: string;
   updated_at: string;
 };
+
+export type PostListItem = Omit<Post, "content" | "status" | "created_at" | "updated_at">;
