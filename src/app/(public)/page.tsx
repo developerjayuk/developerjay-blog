@@ -1,14 +1,29 @@
-export const revalidate = false;
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
-import { getPublishedPosts } from "@/lib/posts/queries";
+import { getAllTags, getPublishedPosts } from "@/lib/posts/queries";
 import { PostCard } from "./PostCard";
+import { SearchBar } from "./SearchBar";
+import { TagFilter } from "./TagFilter";
 
-export default async function PostListPage() {
-  const posts = await getPublishedPosts();
+export default async function PostListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[]; tag?: string | string[] }>;
+}) {
+  const raw = await searchParams;
+  const q = typeof raw.q === "string" ? raw.q : undefined;
+  const tag = typeof raw.tag === "string" ? raw.tag : undefined;
+  const [posts, tags] = await Promise.all([
+    getPublishedPosts({ search: q, tag }),
+    getAllTags(),
+  ]);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
+      <div className="flex flex-col gap-3">
+        <SearchBar />
+        <TagFilter tags={tags} activeTag={tag} />
+      </div>
       {posts.length > 0 ? (
         <ul className="flex flex-col gap-4">
           {posts.map((post) => (
@@ -18,7 +33,11 @@ export default async function PostListPage() {
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-500">No posts published yet — check back soon :)</p>
+        <p className="text-sm text-zinc-500">
+          {q || tag
+            ? "No posts match your search."
+            : "No posts published yet — check back soon :)"}
+        </p>
       )}
     </div>
   );

@@ -9,13 +9,17 @@ to Supabase (Postgres + Auth + Storage) — no hand-rolled backend service.
 ## Architecture map
 ```
 app/
-  (public)/            # post list (page.tsx) + post detail (posts/[slug]/page.tsx, with
-                        #   generateStaticParams/generateMetadata) — both `revalidate = false` +
-                        #   `dynamic = "force-static"`, revalidated on publish (posts change at
-                        #   most weekly); layout.tsx (site title + ThemeToggle); PostCard.tsx/
-                        #   TagList.tsx (shared list+detail pieces); MarkdownContent.tsx (client
-                        #   wrapper rendering the server-produced markdown HTML string, with a
-                        #   delegated click handler for code-block copy buttons)
+  (public)/            # post list (page.tsx, `dynamic = "force-dynamic"` — reads `q`/`tag`
+                        #   `searchParams` to run full-text search + tag filtering server-side on
+                        #   every request, via SearchBar.tsx/TagFilter.tsx client components that
+                        #   drive the URL) + post detail (posts/[slug]/page.tsx, with
+                        #   generateStaticParams/generateMetadata) — detail page still
+                        #   `revalidate = false` + `dynamic = "force-static"`, revalidated on
+                        #   publish (posts change at most weekly); layout.tsx (site title +
+                        #   ThemeToggle); PostCard.tsx/TagList.tsx (shared list+detail pieces);
+                        #   MarkdownContent.tsx (client wrapper rendering the server-produced
+                        #   markdown HTML string, with a delegated click handler for code-block
+                        #   copy buttons)
   admin/                # session-gated CRUD UI (login, post list/create/edit/delete,
                         #   image upload, draft/publish toggle) — gated by proxy;
                         #   admin/(protected)/ holds the dashboard + CRUD pages,
@@ -44,8 +48,10 @@ lib/
                         #   the client.
   posts/                # types.ts (hand-declared Post/PostStatus, no generated Database types
                         #   yet) + slugify.ts (shared client/server slug normalization) +
-                        #   queries.ts (getPublishedPosts/getPublishedPostBySlug, React `cache()`-
-                        #   wrapped, RLS-only filtering — no app-level status filter)
+                        #   queries.ts (getPublishedPosts/getPublishedPostBySlug/getAllTags, React
+                        #   `cache()`-wrapped, RLS-only filtering — no app-level status filter;
+                        #   getPublishedPosts takes optional `{ search, tag }` and branches into a
+                        #   Postgres `search_vector` full-text query / `tags` array-contains query)
   markdown/              # render.ts: unified pipeline (remark-parse/gfm/rehype → rehype-pretty-
                         #   code with dual light/dark Shiki themes → rehype-stringify) producing
                         #   an HTML string server-side. rehype-copy-button.ts: hand-rolled rehype
@@ -68,8 +74,11 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
 - **Access control:** admin-route gating + Supabase key/RLS boundaries — see
   `.claude/references/supabase-access-control.md`.
 - **Data model:** `posts` schema + storage decisions — see `.claude/references/data-model.md`.
-- **Rendering:** Public post pages use ISR (revalidated on publish), not per-request SSR — posts
-  change at most weekly.
+- **Rendering:** Post detail pages use ISR (revalidated on publish), not per-request SSR — posts
+  change at most weekly. The post list page (`app/(public)/page.tsx`) is the one exception: it's
+  dynamically rendered (`dynamic = "force-dynamic"`) so it can read `q`/`tag` search params and
+  query Supabase per request for search + tag filtering (PB-0006) — acceptable at this blog's
+  low-traffic scale.
 - **Post content:** Markdown, rendered server-side with a `unified` pipeline (`remark`/`rehype`) +
   `shiki`/`rehype-pretty-code` for syntax highlighting — not the `react-markdown` component (its
   plugin execution model doesn't fit `rehype-pretty-code`'s async Shiki highlighter; see
