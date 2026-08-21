@@ -26,3 +26,84 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* rehype-pretty-code dual-theme: Shiki emits --shiki-light/--shiki-light-bg and
+   --shiki-dark/--shiki-dark-bg as CSS variables; these rules pick the right pair based on
+   the same `.dark` class next-themes toggles (see the @custom-variant above). */
+.markdown-content pre {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  background-color: var(--shiki-light-bg);
+}
+.dark .markdown-content pre {
+  background-color: var(--shiki-dark-bg);
+}
+.markdown-content pre code span {
+  color: var(--shiki-light);
+}
+.dark .markdown-content pre code span {
+  color: var(--shiki-dark);
+}
+
+.markdown-content :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  background-color: var(--background);
+  border: 1px solid currentColor;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+.markdown-content p,
+.markdown-content ul,
+.markdown-content ol,
+.markdown-content blockquote {
+  margin-bottom: 1em;
+}
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 1.5em;
+}
+.markdown-content blockquote {
+  border-left: 3px solid currentColor;
+  padding-left: 1em;
+  opacity: 0.85;
+}
+.markdown-content a {
+  text-decoration: underline;
+}
+.markdown-content img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+.code-block {
+  position: relative;
+}
+.copy-code-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 3.25rem;
+  height: 1.75rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid currentColor;
+  background: var(--background);
+  opacity: 0.7;
+}
+.copy-code-button:hover {
+  opacity: 1;
+}
