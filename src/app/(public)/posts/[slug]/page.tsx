@@ -57,7 +57,7 @@ export default async function PostDetailPage({
       {post.cover_image_url && (
         <Image
           src={post.cover_image_url}
-          alt=""
+          alt={post.title}
           width={1200}
           height={630}
           className="rounded"

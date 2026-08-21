@@ -9,6 +9,9 @@ import { rehypeCopyButton } from "./rehype-copy-button";
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
+  // No `allowDangerousHtml` here or on rehypeStringify below — raw HTML in post markdown is
+  // stripped, not passed through. That's what makes MarkdownContent.tsx's
+  // dangerouslySetInnerHTML safe; don't add it without adding sanitization.
   .use(remarkRehype)
   .use(rehypePrettyCode, {
     theme: { light: "github-light", dark: "github-dark" },

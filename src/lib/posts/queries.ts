@@ -1,14 +1,16 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { Post } from "./types";
+import type { Post, PostListItem } from "./types";
 
-export const getPublishedPosts = cache(async function getPublishedPosts(): Promise<Post[]> {
+export const getPublishedPosts = cache(async function getPublishedPosts(): Promise<
+  PostListItem[]
+> {
   const supabase = await createClient();
   const { data: posts, error } = await supabase
     .from("posts")
-    .select("*")
+    .select("id, slug, title, excerpt, cover_image_url, tags, published_at")
     .order("published_at", { ascending: false })
-    .overrideTypes<Post[], { merge: false }>();
+    .overrideTypes<PostListItem[], { merge: false }>();
 
   if (error) {
     throw error;

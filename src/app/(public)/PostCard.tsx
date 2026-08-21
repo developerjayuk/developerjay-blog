@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { TagList } from "./TagList";
-import type { Post } from "@/lib/posts/types";
+import type { PostListItem } from "@/lib/posts/types";
 
-export function PostCard({ post }: { post: Post }) {
+export function PostCard({ post }: { post: PostListItem }) {
   return (
     <Link
       href={`/posts/${post.slug}`}
@@ -12,7 +12,7 @@ export function PostCard({ post }: { post: Post }) {
       {post.cover_image_url && (
         <Image
           src={post.cover_image_url}
-          alt=""
+          alt={post.title}
           width={800}
           height={420}
           className="rounded"
