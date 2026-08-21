@@ -29,7 +29,7 @@ export function TagFilter({ tags, activeTag }: { tags: string[]; activeTag?: str
             type="button"
             onClick={() => toggleTag(tag)}
             aria-pressed={activeTag === tag}
-            className={`rounded border px-2 py-0.5 text-xs ${
+            className={`cursor-pointer rounded border px-2 py-0.5 text-xs ${
               activeTag === tag
                 ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
                 : "text-zinc-500"

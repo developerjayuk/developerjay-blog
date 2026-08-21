@@ -8,9 +8,11 @@ import { TagFilter } from "./TagFilter";
 export default async function PostListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; tag?: string }>;
+  searchParams: Promise<{ q?: string | string[]; tag?: string | string[] }>;
 }) {
-  const { q, tag } = await searchParams;
+  const raw = await searchParams;
+  const q = typeof raw.q === "string" ? raw.q : undefined;
+  const tag = typeof raw.tag === "string" ? raw.tag : undefined;
   const [posts, tags] = await Promise.all([
     getPublishedPosts({ search: q, tag }),
     getAllTags(),

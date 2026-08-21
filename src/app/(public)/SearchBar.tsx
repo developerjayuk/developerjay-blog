@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DEBOUNCE_MS = 300;
 
@@ -19,11 +19,19 @@ export function SearchBar() {
     setQuery(urlQuery);
   }
 
+  // Kept current every render so the pending debounce timeout below always builds
+  // its params from the latest URL, not the one at the moment typing started —
+  // otherwise a tag click while a debounce is pending gets silently overwritten.
+  const searchParamsRef = useRef(searchParams);
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  });
+
   useEffect(() => {
     if (query === urlQuery) return;
 
     const timeout = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParamsRef.current.toString());
       if (query) {
         params.set("q", query);
       } else {
