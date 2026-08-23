@@ -13,9 +13,9 @@ export function PostCard({ post }: { post: PostListItem }) {
         <Image
           src={post.cover_image_url}
           alt={post.title}
-          width={800}
-          height={420}
-          className="rounded"
+          width={400}
+          height={200}
+          className="mx-auto block rounded dark:invert"
         />
       )}
       <h2 className="text-lg font-semibold">{post.title}</h2>

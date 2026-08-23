@@ -39,11 +39,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function PostDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function PostDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPublishedPostBySlug(slug);
 
@@ -58,17 +54,20 @@ export default async function PostDetailPage({
       <Link href="/" className="text-sm text-zinc-500 hover:underline">
         &larr; Back to posts
       </Link>
-      {post.cover_image_url && (
-        <Image
-          src={post.cover_image_url}
-          alt={post.title}
-          width={1200}
-          height={630}
-          className="rounded"
-        />
-      )}
       <h1 className="text-2xl font-semibold">{post.title}</h1>
       <TagList tags={post.tags} />
+
+      {post.cover_image_url && (
+        <div className="overflow-hidden rounded">
+          <Image
+          src={post.cover_image_url}
+          alt={post.title}
+          width={400}
+          height={200}
+          className="mx-auto block rounded dark:invert"
+          />
+        </div>
+      )}
       <MarkdownContent html={html} />
       <Link href="/" className="text-sm text-zinc-500 hover:underline">
         &larr; Back to posts

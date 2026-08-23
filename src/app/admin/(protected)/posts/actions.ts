@@ -26,6 +26,7 @@ type ParsedFields = {
   slug: string;
   excerpt: string | null;
   content: string;
+  cover_image_url: string | null;
   tags: string[];
   status: PostStatus;
 };
@@ -35,6 +36,7 @@ function readPostFields(formData: FormData): ParsedFields | { error: string } {
   const rawSlug = formData.get("slug");
   const excerpt = formData.get("excerpt");
   const content = formData.get("content");
+  const coverImageUrl = formData.get("coverImageUrl");
   const status = formData.get("status");
 
   if (typeof title !== "string" || !title.trim()) {
@@ -56,6 +58,8 @@ function readPostFields(formData: FormData): ParsedFields | { error: string } {
     slug,
     excerpt: typeof excerpt === "string" && excerpt.trim() ? excerpt.trim() : null,
     content: typeof content === "string" ? content : "",
+    cover_image_url:
+      typeof coverImageUrl === "string" && coverImageUrl.trim() ? coverImageUrl.trim() : null,
     tags: parseTags(formData.get("tags")),
     status,
   };

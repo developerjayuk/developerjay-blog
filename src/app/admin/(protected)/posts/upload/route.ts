@@ -9,6 +9,7 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/webp": "webp",
   "image/gif": "gif",
+  "image/svg+xml": "svg",
 };
 
 export async function POST(request: Request): Promise<Response> {
@@ -39,7 +40,7 @@ export async function POST(request: Request): Promise<Response> {
   const extension = ALLOWED_TYPES[file.type];
   if (!extension) {
     return Response.json(
-      { error: "Unsupported file type. Use PNG, JPEG, WEBP, or GIF." },
+      { error: "Unsupported file type. Use PNG, JPEG, WEBP, GIF, or SVG." },
       { status: 400 },
     );
   }

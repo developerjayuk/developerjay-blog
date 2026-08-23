@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const ACCEPTED_TYPES = "image/png,image/jpeg,image/webp,image/gif";
+const ACCEPTED_TYPES = "image/png,image/jpeg,image/webp,image/gif,image/svg+xml";
 // max size 4MB, same as the server limit
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
 

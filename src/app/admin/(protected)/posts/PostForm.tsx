@@ -82,6 +82,17 @@ export function PostForm({ mode, post }: PostFormProps) {
         className="rounded border px-3 py-2"
       />
 
+      <label htmlFor="coverImageUrl" className="text-sm">
+        Cover image URL
+      </label>
+      <input
+        type="text"
+        id="coverImageUrl"
+        name="coverImageUrl"
+        defaultValue={post?.cover_image_url ?? ""}
+        className="rounded border px-3 py-2"
+      />
+
       <label htmlFor="content" className="text-sm">
         Content (Markdown)
       </label>

@@ -688,7 +688,7 @@ Add an `app/(public)/` route group with its own layout (site title linking home 
             src={post.cover_image_url}
             alt=""
             width={1200}
-            height={630}
+            height={600}
             className="rounded"
           />
         )}
