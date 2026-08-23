@@ -15,7 +15,7 @@ export function PostCard({ post }: { post: PostListItem }) {
           alt={post.title}
           width={400}
           height={200}
-          className="mx-auto block rounded dark:invert"
+          className="mx-auto block h-auto w-auto rounded dark:invert"
         />
       )}
       <h2 className="text-lg font-semibold">{post.title}</h2>
