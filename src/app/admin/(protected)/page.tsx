@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/admin";
-import { logout } from "@/app/admin/actions/logout";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
@@ -18,11 +17,6 @@ export default async function AdminDashboard() {
       <Link href="/admin/posts" className="rounded border px-3 py-1 text-sm w-fit">
         Manage posts
       </Link>
-      <form action={logout}>
-        <button type="submit" className="rounded border px-3 py-1 text-sm">
-          Log out
-        </button>
-      </form>
     </div>
   );
 }

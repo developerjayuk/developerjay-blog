@@ -1,15 +1,9 @@
-import Link from "next/link";
-import { ThemeToggle } from "@/lib/theme/theme-toggle";
+import { SiteHeader } from "@/app/SiteHeader";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-4">
-        <Link href="/" className="text-lg font-semibold">
-          <span className="text-red-400">Developer Jay&apos;s Musings</span>
-        </Link>
-        <ThemeToggle />
-      </header>
+      <SiteHeader />
       <main className="flex-1">{children}</main>
     </div>
   );

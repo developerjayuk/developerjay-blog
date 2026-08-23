@@ -4,6 +4,7 @@ export const dynamic = "force-static";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { getPublishedPostBySlug, getPublishedPosts } from "@/lib/posts/queries";
 import { renderMarkdown } from "@/lib/markdown/render";
 import { MarkdownContent } from "../../MarkdownContent";
@@ -54,6 +55,9 @@ export default async function PostDetailPage({
 
   return (
     <article className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
+      <Link href="/" className="text-sm text-zinc-500 hover:underline">
+        &larr; Back to posts
+      </Link>
       {post.cover_image_url && (
         <Image
           src={post.cover_image_url}
@@ -66,6 +70,9 @@ export default async function PostDetailPage({
       <h1 className="text-2xl font-semibold">{post.title}</h1>
       <TagList tags={post.tags} />
       <MarkdownContent html={html} />
+      <Link href="/" className="text-sm text-zinc-500 hover:underline">
+        &larr; Back to posts
+      </Link>
     </article>
   );
 }

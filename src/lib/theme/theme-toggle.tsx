@@ -2,6 +2,8 @@
 
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
+import MoonFoggyFillIcon from "remixicon-react/MoonFoggyFillIcon";
+import SunFoggyFillIcon from "remixicon-react/SunFoggyFillIcon";
 
 const noopSubscribe = () => () => {};
 
@@ -16,7 +18,7 @@ export function ThemeToggle() {
   );
 
   if (!mounted) {
-    return <button aria-label="Toggle theme" disabled className="rounded border px-3 py-1 text-sm opacity-0" />;
+    return <button aria-label="Toggle theme" disabled className="rounded border p-2 opacity-0" />;
   }
 
   return (
@@ -24,9 +26,13 @@ export function ThemeToggle() {
       type="button"
       aria-label="Toggle theme"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="rounded border px-3 py-1 text-sm"
+      className="rounded border p-2"
     >
-      {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+      {resolvedTheme === "dark" ? (
+        <SunFoggyFillIcon size={18} />
+      ) : (
+        <MoonFoggyFillIcon size={18} />
+      )}
     </button>
   );
 }

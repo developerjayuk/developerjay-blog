@@ -1,5 +1,6 @@
 import { LoginForm } from "./login-form";
 import { sanitizeRedirect } from "@/lib/auth/sanitize-redirect";
+import { SiteHeader } from "@/app/SiteHeader";
 
 export default async function LoginPage({
   searchParams,
@@ -9,9 +10,12 @@ export default async function LoginPage({
   const { redirect } = await searchParams;
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6">
-      <h1 className="text-xl font-semibold">Admin login</h1>
-      <LoginForm redirectTo={sanitizeRedirect(redirect)} />
+    <div className="flex flex-1 flex-col">
+      <SiteHeader />
+      <div className="flex flex-1 flex-col items-center justify-center gap-6">
+        <h1 className="text-xl font-semibold">Admin login</h1>
+        <LoginForm redirectTo={sanitizeRedirect(redirect)} />
+      </div>
     </div>
   );
 }

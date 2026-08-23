@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
+import Link from "next/link";
 import { createPost, updatePost, type PostFormState } from "./actions";
 import { ImageUpload } from "./ImageUpload";
 import { slugify } from "@/lib/posts/slugify";
@@ -120,9 +121,24 @@ export function PostForm({ mode, post }: PostFormProps) {
 
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
 
-      <button type="submit" disabled={pending} className="rounded border px-3 py-2 text-sm">
-        {pending ? "Saving…" : mode === "create" ? "Create post" : "Save changes"}
-      </button>
+      <div className="flex items-center gap-4">
+        <button type="submit" disabled={pending} className="rounded border px-3 py-2 text-sm">
+          {pending ? "Saving…" : mode === "create" ? "Create post" : "Save changes"}
+        </button>
+        {mode === "edit" && (
+          <Link
+            href="/admin/posts"
+            className="text-sm text-zinc-500 hover:underline"
+            onClick={(e) => {
+              if (!confirm("Are you sure? Any changes have not been saved!")) {
+                e.preventDefault();
+              }
+            }}
+          >
+            Cancel
+          </Link>
+        )}
+      </div>
     </form>
   );
 }
