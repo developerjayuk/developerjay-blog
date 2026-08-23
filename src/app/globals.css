@@ -55,6 +55,11 @@ body {
   border: 1px solid currentColor;
 }
 
+.markdown-content h2 {
+  font-size: 1.5em;
+  color: #F87171;
+}
+
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3 {
