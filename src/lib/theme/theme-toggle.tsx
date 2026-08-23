@@ -26,7 +26,7 @@ export function ThemeToggle() {
       type="button"
       aria-label="Toggle theme"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="rounded border p-2"
+      className="rounded border p-2 text-yellow-600 bg-white dark:bg-zinc-800 cursor-pointer"
     >
       {resolvedTheme === "dark" ? (
         <SunFoggyFillIcon size={18} />

@@ -64,7 +64,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
             alt={post.title}
             width={400}
             height={200}
-            className="mx-auto block h-auto w-auto rounded dark:invert"
+            className="mx-auto block h-auto rounded dark:invert"
           />
         </div>
       )}
