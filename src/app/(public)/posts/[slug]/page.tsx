@@ -62,8 +62,8 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
           <Image
             src={post.cover_image_url}
             alt={post.title}
-            width={400}
-            height={200}
+            width={200}
+            height={100}
             className="mx-auto block h-auto rounded dark:invert"
           />
         </div>
