@@ -7,6 +7,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -19,6 +20,7 @@
 .dark {
   --background: #27272a;
   --foreground: #ededed;
+  color-scheme: dark;
 }
 
 body {

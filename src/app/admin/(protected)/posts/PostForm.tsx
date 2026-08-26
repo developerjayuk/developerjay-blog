@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
 import { createPost, updatePost, type PostFormState } from "./actions";
 import { ImageUpload } from "./ImageUpload";
+import { Listbox } from "./Listbox";
 import { slugify } from "@/lib/posts/slugify";
 import type { Post } from "@/lib/posts/types";
 
@@ -120,15 +121,15 @@ export function PostForm({ mode, post }: PostFormProps) {
       <label htmlFor="status" className="text-sm">
         Status
       </label>
-      <select
+      <Listbox
         id="status"
         name="status"
         defaultValue={post?.status ?? "draft"}
-        className="rounded border px-3 py-2"
-      >
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-      </select>
+        options={[
+          { value: "draft", label: "Draft" },
+          { value: "published", label: "Published" },
+        ]}
+      />
 
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
 
