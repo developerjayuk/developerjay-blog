@@ -1,4 +1,4 @@
-# CLAUDE.md — Personal Blog Platform
+# AGENTS.md — Personal Blog Platform
 
 ## What this is
 A single-admin personal blog for Jason to publish weekly write-ups of what he's learning (text, code
@@ -44,12 +44,6 @@ lib/
                         #   (publishable key, respects RLS, async createClient()) used by the
                         #   (protected) layout and login/logout Server Actions — proxy.ts builds an
                         #   equivalent inline client (different cookie adapter, not this module).
-                        #   public.ts: anon-key client with no cookie/session handling (publishable
-                        #   key, respects RLS, sync createClient(), like admin.ts's shape but
-                        #   unprivileged) — used for public reads so a stray admin session cookie
-                        #   never gets forwarded as an Authorization header on a public query (this
-                        #   was the cause of intermittent PGRST303 "JWT issued at future" errors on
-                        #   first page load, surfaced by Supabase free-tier cold-start clock skew).
                         #   client.ts: browser client (publishable key). Secret key must never reach
                         #   the client.
   posts/                # types.ts (hand-declared Post/PostStatus, no generated Database types
@@ -57,8 +51,7 @@ lib/
                         #   queries.ts (getPublishedPosts/getPublishedPostBySlug/getAllTags, React
                         #   `cache()`-wrapped, RLS-only filtering — no app-level status filter;
                         #   getPublishedPosts takes optional `{ search, tag }` and branches into a
-                        #   Postgres `search_vector` full-text query / `tags` array-contains query;
-                        #   uses lib/supabase/public, not server, since these reads are anonymous)
+                        #   Postgres `search_vector` full-text query / `tags` array-contains query)
   markdown/              # render.ts: unified pipeline (remark-parse/gfm/rehype → rehype-pretty-
                         #   code with dual light/dark Shiki themes → rehype-stringify) producing
                         #   an HTML string server-side. rehype-copy-button.ts: hand-rolled rehype
@@ -72,17 +65,15 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
 - **New admin capability:** `app/admin/(protected)/` for pages requiring a logged-in session — a
   Server Action or Route Handler using `lib/supabase/admin` (secret key, privileged) or
   `lib/supabase/server` (publishable key, session-scoped), whichever the operation needs.
-- **Any Supabase read/write:** goes through `lib/supabase/admin`, `lib/supabase/server`,
-  `lib/supabase/public`, or `lib/supabase/client`, not an ad-hoc `createClient()` call. Public,
-  anonymous reads (post list/detail/tags) use `lib/supabase/public`, not `server`, so they never
-  forward a logged-in admin's session cookie.
+- **Any Supabase read/write:** goes through `lib/supabase/admin`, `lib/supabase/server`, or
+  `lib/supabase/client`, not an ad-hoc `createClient()` call.
 
 ## Ground rules (conventions)
 - **Backend:** No hand-rolled API layer, no separate backend service — Server Actions/Route Handlers
   in the Next.js app talk to Supabase directly.
 - **Access control:** admin-route gating + Supabase key/RLS boundaries — see
-  `.claude/references/supabase-access-control.md`.
-- **Data model:** `posts` schema + storage decisions — see `.claude/references/data-model.md`.
+  `.Codex/references/supabase-access-control.md`.
+- **Data model:** `posts` schema + storage decisions — see `.Codex/references/data-model.md`.
 - **Rendering:** Post detail pages use ISR (revalidated on publish), not per-request SSR — posts
   change at most weekly. The post list page (`app/(public)/page.tsx`) is the one exception: it's
   dynamically rendered (`dynamic = "force-dynamic"`) so it can read `q`/`tag` search params and
@@ -115,5 +106,5 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
 - `npx supabase migration new <name>` — add a new migration under `supabase/migrations/`.
 
 ## On-demand context
-- Recurring patterns → `.claude/references/<topic>.md`.
-- File-type-specific rules → `.claude/rules/<area>.md` (path-scoped; loads only for matching files).
+- Recurring patterns → `.Codex/references/<topic>.md`.
+- File-type-specific rules → `.Codex/rules/<area>.md` (path-scoped; loads only for matching files).
