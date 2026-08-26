@@ -43,7 +43,7 @@ export async function proxy(request: NextRequest) {
 
   if (isAuthorized && isLoginPath) {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin";
+    url.pathname = "/admin/posts";
     url.search = "";
     return NextResponse.redirect(url);
   }
