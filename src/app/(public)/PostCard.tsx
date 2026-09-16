@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { TagList } from "./TagList";
 import type { PostListItem } from "@/lib/posts/types";
+import { isSvgUrl } from "@/lib/posts/cover-image";
 
 export function PostCard({ post }: { post: PostListItem }) {
   return (
@@ -15,7 +16,7 @@ export function PostCard({ post }: { post: PostListItem }) {
           alt={post.title}
           width={400}
           height={200}
-          className="mx-auto block h-auto rounded dark:invert"
+          className={`mx-auto block h-auto rounded ${isSvgUrl(post.cover_image_url) ? "dark:invert" : ""}`}
         />
       )}
       <h2 className="text-lg font-semibold">{post.title}</h2>

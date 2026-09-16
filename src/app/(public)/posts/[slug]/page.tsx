@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPublishedPostBySlug, getPublishedPosts } from "@/lib/posts/queries";
 import { renderMarkdown } from "@/lib/markdown/render";
+import { isSvgUrl } from "@/lib/posts/cover-image";
 import { MarkdownContent } from "../../MarkdownContent";
 import { TagList } from "../../TagList";
 
@@ -57,7 +58,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
       <h1 className="text-2xl font-semibold">{post.title}</h1>
       <TagList tags={post.tags} />
 
-      {post.cover_image_url && (
+      {post.cover_image_url && isSvgUrl(post.cover_image_url) && (
         <div className="overflow-hidden rounded">
           <Image
             src={post.cover_image_url}

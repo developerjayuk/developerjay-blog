@@ -62,6 +62,10 @@ body {
   color: #F87171;
 }
 
+.markdown-content h3 {
+  font-size: 1.25em;
+}
+
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3 {
