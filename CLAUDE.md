@@ -76,6 +76,9 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
   `lib/supabase/public`, or `lib/supabase/client`, not an ad-hoc `createClient()` call. Public,
   anonymous reads (post list/detail/tags) use `lib/supabase/public`, not `server`, so they never
   forward a logged-in admin's session cookie.
+- **Tests:** next to the unit under test as `<name>.test.ts(x)`; mock `next/navigation`/
+  `next-themes`/`"use server"` action modules, not internal child components (see
+  `.claude/references/frontend-component-best-practices.md`).
 
 ## Ground rules (conventions)
 - **Backend:** No hand-rolled API layer, no separate backend service — Server Actions/Route Handlers
@@ -99,9 +102,12 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
 - **Approach:** Build directly for most changes. Plan first (surface assumptions, open questions)
   only when a change touches auth, RLS policies, or the data model/schema — those are the areas
   worth pausing on.
-- **Verify:** No test suite yet — a manual check (dev server, exercise the actual flow in the
-  browser) is enough for now. Don't add tests speculatively; revisit test coverage once the
-  prototype is stable, not before.
+- **Verify:** Vitest + React Testing Library (jsdom), tests next to their source as
+  `<name>.test.ts(x)`. New lib utilities and interactive client components come with tests;
+  `npm test` joins `npm run lint`, `npx tsc --noEmit`, and `npm run build` as a validation gate. A
+  manual browser check is still expected for UI flows. Async Server Components
+  (`page.tsx`/`layout.tsx`) and `proxy.ts` aren't unit-testable in Vitest — don't try; they're
+  left for a future E2E suite.
 - **Scope discipline:** Comments, RSS, view-count analytics, video embedding, and multi-author
   support are explicit non-goals for MVP.
 - **Stack discipline:** Stay inside TypeScript/React/Next + Supabase — a separate backend service
@@ -112,6 +118,10 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
 - `npm run dev` — start the dev server (Turbopack).
 - `npm run build` — production build.
 - `npm run lint` — ESLint.
+- `npm test` — run the Vitest suite once (`vitest run`).
+- `npm run test:watch` — Vitest in watch mode.
+- CI (`.github/workflows/ci.yml`) runs lint + `tsc` (after `next typegen`) + `npm test` on
+  push to `main` and on PRs — not `npm run build`, which needs live Supabase.
 - `npx supabase migration new <name>` — add a new migration under `supabase/migrations/`.
 
 ## On-demand context
