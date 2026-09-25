@@ -75,7 +75,7 @@ Test files sit next to their source as `<name>.test.ts(x)`. That's safe inside `
 
 **Forward-references** (plans that extend or supersede this; append as follow-ups get created):
 
-- `docs/tickets/pb-0012.md` (plan not yet written): extends this Vitest config with a `node` environment for server tests, a `server-only` alias, and GitHub Actions CI. **CI must use Node ≥ 22.22 / 24.15**, because Vitest 5 and jsdom 30 require it (see NOTES).
+- `docs/tickets/pb-0012.md` → plan `.claude/plans/pb-0012-server-side-tests.md`: adds server-side tests (each opting into Vitest's `node` environment with a `// @vitest-environment node` docblock) and extends this Vitest config with a `server-only` alias. GitHub Actions CI was pulled forward into this ticket, not PB-0012. **CI must use Node ≥ 22.22 / 24.15**, because Vitest 5 and jsdom 30 require it (see NOTES).
 
 ---
 
