@@ -15,11 +15,11 @@ app/
                         #   drive the URL) + post detail (posts/[slug]/page.tsx, with
                         #   generateStaticParams/generateMetadata) — detail page still
                         #   `revalidate = false` + `dynamic = "force-static"`, revalidated on
-                        #   publish (posts change at most weekly); layout.tsx (site title +
-                        #   ThemeToggle); PostCard.tsx/TagList.tsx (shared list+detail pieces);
-                        #   MarkdownContent.tsx (client wrapper rendering the server-produced
-                        #   markdown HTML string, with a delegated click handler for code-block
-                        #   copy buttons)
+                        #   publish (posts change at most weekly); layout.tsx (renders
+                        #   app/SiteHeader.tsx: site title + ThemeToggle); PostCard.tsx/TagList.tsx
+                        #   (shared list+detail pieces); MarkdownContent.tsx (client wrapper
+                        #   rendering the server-produced markdown HTML string, with a delegated
+                        #   click handler for code-block copy buttons)
   admin/                # session-gated CRUD UI (login, post list/create/edit/delete,
                         #   image upload, draft/publish toggle) — gated by proxy;
                         #   admin/(protected)/ holds the dashboard + CRUD pages,
@@ -35,7 +35,7 @@ app/
                         #   layout, so it re-checks auth itself); ImageUpload.tsx is the Client
                         #   Component that calls it and hands the resulting URL back to
                         #   PostForm.tsx to splice into the content textarea as markdown
-  proxy.ts              # checks active Supabase session AND session email == allowlisted admin,
+proxy.ts                # checks active Supabase session AND session email == allowlisted admin,
                         #   redirects unauthenticated/wrong-email requests to /admin/login
                         #   (Next.js 16 renamed the middleware.ts convention to proxy.ts)
 lib/
