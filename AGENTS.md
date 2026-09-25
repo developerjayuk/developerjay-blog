@@ -76,6 +76,11 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
   `lib/supabase/public`, or `lib/supabase/client`, not an ad-hoc `createClient()` call. Public,
   anonymous reads (post list/detail/tags) use `lib/supabase/public`, not `server`, so they never
   forward a logged-in admin's session cookie.
+- **Tests:** next to the unit under test as `<name>.test.ts(x)`; mock `next/navigation`/
+  `next-themes`/`"use server"` action modules, not internal child components (see
+  `.claude/references/frontend-component-best-practices.md`). Server-side tests mock the
+  `lib/supabase/*` module (not `next/headers`/`@supabase/*`) plus `next/cache`/`next/navigation`;
+  they never hit a real Supabase.
 
 ## Ground rules (conventions)
 - **Backend:** No hand-rolled API layer, no separate backend service — Server Actions/Route Handlers
@@ -101,8 +106,10 @@ images, Auth config with public sign-up disabled and one allowlisted admin user.
   worth pausing on.
 - **Verify:** Vitest + React Testing Library (jsdom), tests next to their source as
   `<name>.test.ts(x)`. New lib utilities and interactive client components come with tests;
-  `npm test` joins `npm run lint`, `npx tsc --noEmit`, and `npm run build` as a validation gate. A
-  manual browser check is still expected for UI flows. Async Server Components
+  `npm test` joins `npm run lint`, `npx tsc --noEmit`, and `npm run build` as a validation gate.
+  Server-side tests (Server Actions, Route Handlers, `server-only` lib modules) start with a
+  `// @vitest-environment node` docblock; `vitest.config.mts` aliases `server-only` to its empty
+  module so they can be imported. A manual browser check is still expected for UI flows. Async Server Components
   (`page.tsx`/`layout.tsx`) and `proxy.ts` aren't unit-testable in Vitest — don't try; they're
   left for a future E2E suite.
 - **Scope discipline:** Comments, RSS, view-count analytics, video embedding, and multi-author
