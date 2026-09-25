@@ -64,6 +64,22 @@ describe("POST", () => {
     expect(createServerClient).not.toHaveBeenCalled();
   });
 
+  // Browsers always send Origin on cross-origin POSTs; without one, the auth check alone decides.
+  it("lets a request with no Origin header through to the session check", async () => {
+    const response = await POST(uploadRequest(image(), { host: "localhost:3000" }));
+
+    expect(createServerClient).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+  });
+
+  it("fails closed when ADMIN_EMAIL is unset, without reaching the admin client", async () => {
+    vi.stubEnv("ADMIN_EMAIL", "");
+    mockSession(null);
+
+    await expect(POST(uploadRequest(image()))).rejects.toThrow("ADMIN_EMAIL");
+    expect(createAdminClient).not.toHaveBeenCalled();
+  });
+
   it("returns 401 when there is no session, without reaching the admin client", async () => {
     mockSession(null);
 

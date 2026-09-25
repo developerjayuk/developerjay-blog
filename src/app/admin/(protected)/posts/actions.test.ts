@@ -202,6 +202,7 @@ describe("updatePost", () => {
     expect(await updatePost(null, editForm())).toEqual({
       error: "Could not update the post. Please try again.",
     });
+    expect(navigation.redirect).not.toHaveBeenCalled();
   });
 
   it("updates the row matching the post id with the parsed fields", async () => {
@@ -249,6 +250,19 @@ describe("updatePost", () => {
     expect(cache.revalidatePath).toHaveBeenCalledWith("/posts/hello-world");
   });
 
+  it("revalidates public pages once when a published post is edited without changing its slug", async () => {
+    mockSupabase();
+
+    await expect(
+      updatePost(null, editForm({ currentStatus: "published", status: "published" })),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(cache.revalidatePath).toHaveBeenCalledTimes(2);
+    expect(cache.revalidatePath).toHaveBeenCalledWith("/");
+    expect(cache.revalidatePath).toHaveBeenCalledWith("/posts/hello-world");
+    expect(navigation.redirect).toHaveBeenCalledWith("/admin/posts");
+  });
+
   it("revalidates both the new and old post paths when a published post's slug changes", async () => {
     mockSupabase();
 
@@ -264,6 +278,8 @@ describe("updatePost", () => {
       ),
     ).rejects.toThrow("NEXT_REDIRECT");
 
+    // revalidatePublicPaths runs once per slug, so "/" is revalidated twice.
+    expect(cache.revalidatePath).toHaveBeenCalledTimes(4);
     expect(cache.revalidatePath).toHaveBeenCalledWith("/");
     expect(cache.revalidatePath).toHaveBeenCalledWith("/posts/new-title");
     expect(cache.revalidatePath).toHaveBeenCalledWith("/posts/old-slug");
